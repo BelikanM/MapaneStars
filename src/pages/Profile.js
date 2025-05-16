@@ -1,13 +1,22 @@
 import React from 'react';
+import './profile.css'; // Assure-toi que le chemin est correct
+import AppwriteAPI from './profile/AppwriteAPI';
+import Liste from './profile/Liste';
+import Upload from './profile/Upload';
+import Update from './profile/Update';
+import Parametres from './profile/Parametres';
 
-const Profile = () => {
+function Profile() {
   return (
-    <div style={{ padding: 20, color: '#fff' }}>
-      <h1>Profil</h1>
-      <p>Bienvenue sur la page Profile.</p>
+    <div>
+      <h1>Mon Profil</h1>
+      <AppwriteAPI />
+      <Liste />
+      <Upload />
+      <Update />
+      <Parametres />
     </div>
   );
-};
+}
 
 export default Profile;
-
