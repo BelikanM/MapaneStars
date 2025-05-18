@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Import des pages
 import Profile from './pages/Profile';
@@ -18,23 +19,24 @@ const appStyle = {
 
 function App() {
   return (
-    <Router>
-      <div style={appStyle}>
-        <Navbar />
-        <div className="content">
-          <Routes>
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/actualites" element={<Actualites />} />
-            <Route path="/start-quartier" element={<StartQuartier />} />
-            <Route path="/portefeuille" element={<Portefeuille />} />
-            {/* Redirection par défaut vers Actualités */}
-            <Route path="/" element={<Navigate to="/actualites" replace />} />
-          </Routes>
+    <GoogleOAuthProvider clientId="392431159146-911fe8cluac8hc44s3ntmdfa2hfn6a21.apps.googleusercontent.com">
+      <Router>
+        <div style={appStyle}>
+          <Navbar />
+          <div className="content">
+            <Routes>
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/actualites" element={<Actualites />} />
+              <Route path="/start-quartier" element={<StartQuartier />} />
+              <Route path="/portefeuille" element={<Portefeuille />} />
+              {/* Redirection par défaut */}
+              <Route path="/" element={<Navigate to="/actualites" replace />} />
+            </Routes>
+          </div>
         </div>
-      </div>
-    </Router>
+      </Router>
+    </GoogleOAuthProvider>
   );
 }
 
 export default App;
-

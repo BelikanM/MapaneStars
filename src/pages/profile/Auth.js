@@ -1,71 +1,32 @@
-import React, { useEffect, useState } from 'react';
-import { Client, Account } from 'appwrite';
-import { FcGoogle } from 'react-icons/fc';
+import React from 'react';
+import { useUser } from './UserContext';
+import AppwriteAPI from './AppwriteAPI';
 
-const client = new Client()
-  .setEndpoint(process.env.REACT_APP_APPWRITE_ENDPOINT)
-  .setProject(process.env.REACT_APP_APPWRITE_PROJECT_ID);
+export default function Auth() {
+  const { user, fetchUser } = useUser();
 
-const account = new Account(client);
-
-function Auth() {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const currentUser = await account.get();
-        setUser(currentUser);
-      } catch (err) {
-        setUser(null);
-      }
-    };
-    checkUser();
-  }, []);
-
-  const handleGoogleLogin = () => {
-    account.createOAuth2Session('google', window.location.href, window.location.href);
-  };
-
+  const handleLogin = () => AppwriteAPI.loginWithGoogle();
   const handleLogout = async () => {
-    await account.deleteSession('current');
-    setUser(null);
-    window.location.reload();
+    await AppwriteAPI.logout();
+    fetchUser();
   };
 
   return (
-    <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-      {user ? (
-        <>
-          <h3>Bienvenue, {user.name}</h3>
-          <button onClick={handleLogout} style={buttonStyle}>Se Déconnecter</button>
-        </>
+    <div className="auth-container">
+      {!user ? (
+        <button className="btn google" onClick={handleLogin}>Connexion Google</button>
       ) : (
-        <button onClick={handleGoogleLogin} style={googleButtonStyle}>
-          <FcGoogle size={24} style={{ marginRight: '8px' }} /> Connexion avec Google
-        </button>
+        <div className="user-info">
+          <img 
+            src={user.prefs?.profilePicture || 'https://via.placeholder.com/150'} 
+            alt="Avatar" 
+            className="avatar"
+          />
+          <p>{user.name}</p>
+          <p>{user.email}</p>
+          <button className="btn logout" onClick={handleLogout}>Déconnexion</button>
+        </div>
       )}
     </div>
   );
 }
-
-const buttonStyle = {
-  padding: '10px 20px',
-  backgroundColor: '#e50914',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
-};
-
-const googleButtonStyle = {
-  ...buttonStyle,
-  backgroundColor: '#fff',
-  color: '#000',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '8px',
-};
-
-export default Auth;

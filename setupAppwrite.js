@@ -9,8 +9,16 @@ const client = new sdk.Client()
 const databases = new sdk.Databases(client);
 const storage = new sdk.Storage(client);
 
+const defaultPermissions = [
+  sdk.Permission.read(sdk.Role.users()),
+  sdk.Permission.create(sdk.Role.users()),
+  sdk.Permission.update(sdk.Role.users()),
+  sdk.Permission.delete(sdk.Role.users()),
+];
+
 (async () => {
   try {
+    // Suppression base de données si existante
     const dbList = await databases.list();
     const existingDB = dbList.databases.find(db => db.name === 'app_database');
 
@@ -68,7 +76,7 @@ const storage = new sdk.Storage(client);
     ];
 
     for (const col of collections) {
-      const collection = await databases.createCollection(db.$id, col.id, col.name);
+      const collection = await databases.createCollection(db.$id, col.id, col.name, defaultPermissions);
       console.log(`✅ Collection créée : ${col.name}`);
 
       for (const attr of col.attributes) {
@@ -89,12 +97,11 @@ const storage = new sdk.Storage(client);
           default:
             console.log(`❌ Méthode inconnue pour ${key}`);
         }
-
         console.log(`  - Attribut ajouté : ${key}`);
       }
     }
 
-    // Suppression du bucket existant s'il existe
+    // Suppression et Création du Bucket avec Permissions
     const buckets = await storage.listBuckets();
     const existingBucket = buckets.buckets.find(b => b.name === 'app_storage');
 
@@ -103,11 +110,15 @@ const storage = new sdk.Storage(client);
       await storage.deleteBucket(existingBucket.$id);
     }
 
-    const bucket = await storage.createBucket(sdk.ID.unique(), 'app_storage');
-    console.log(`✅ Bucket de stockage créé : ${bucket.$id}`);
+    const bucket = await storage.createBucket(
+      sdk.ID.unique(),
+      'app_storage',
+      defaultPermissions
+    );
 
-    console.log('🎉 Configuration complète terminée avec succès (sans permissions).');
+    console.log(`✅ Bucket de stockage créé : ${bucket.$id}`);
+    console.log('🎉 Configuration complète terminée avec succès !');
   } catch (error) {
-    console.error('❌ Erreur lors de la configuration :', error);
+    console.error('❌ Erreur lors de la configuration :', error.message);
   }
 })();

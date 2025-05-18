@@ -1,0 +1,44 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #000;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+}
+
+.profile-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.profile-nav {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.profile-nav button {
+    background: #e50914;
+    border: none;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.profile-nav button:hover {
+    background: #f40612;
+}
+
+.profile-content {
+    width: 100%;
+    max-width: 600px;
+    background: #141414;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    transition: transform 0.5s ease-in-out;
+}

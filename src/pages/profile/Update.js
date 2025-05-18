@@ -1,66 +1,42 @@
-import React, { useEffect, useState } from 'react';
-import * as AppwriteAPI from './AppwriteAPI';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import React, { useState } from 'react';
+import axios from 'axios';
 
-function Update() {
-  const [videos, setVideos] = useState([]);
-  const [newCaption, setNewCaption] = useState('');
+export default function Update() {
+    const [email, setEmail] = useState('');
+    const [file, setFile] = useState(null);
 
-  useEffect(() => {
-    const fetchVideos = async () => {
-      const user = await AppwriteAPI.getCurrentUser();
-      const allVideos = await AppwriteAPI.getFeed();
-      const userVideos = allVideos.filter(video => video.userId === user.$id);
-      setVideos(userVideos);
+    const handlePhotoChange = () => {
+        if (!file) {
+            alert('Sélectionnez une nouvelle photo.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('photo', file);
+        formData.append('email', email);
+
+        axios.post('http://localhost:3000/api/users/update-photo', formData)
+            .then(() => alert('Photo de profil mise à jour.'))
+            .catch(err => console.error(err));
     };
-    fetchVideos();
-  }, []);
 
-  const handleUpdateCaption = async (id) => {
-    if (!newCaption) {
-      alert('Veuillez saisir une nouvelle description.');
-      return;
-    }
-    await AppwriteAPI.updateVideoCaption(id, newCaption);
-    alert('Description mise à jour.');
-    setNewCaption('');
-    window.location.reload();
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm('Confirmer la suppression de cette vidéo ?')) {
-      await AppwriteAPI.deleteVideo(id);
-      alert('Vidéo supprimée.');
-      window.location.reload();
-    }
-  };
-
-  return (
-    <div style={{ textAlign: 'center' }}>
-      {videos.map(video => (
-        <div key={video.$id} style={{ marginBottom: '20px', backgroundColor: '#1f1f1f', padding: '10px', borderRadius: '8px' }}>
-          <video width="300" controls src={video.videoUrl}></video>
-          <p>{video.caption}</p>
-          <input type="text" placeholder="Nouvelle description..." value={newCaption} onChange={(e) => setNewCaption(e.target.value)} style={{ padding: '5px', marginBottom: '10px' }} /><br />
-          <button onClick={() => handleUpdateCaption(video.$id)} style={buttonStyle}><FaEdit style={{ marginRight: '5px' }} />Modifier</button>
-          <button onClick={() => handleDelete(video.$id)} style={{ ...buttonStyle, backgroundColor: '#b00020', marginLeft: '10px' }}>
-            <FaTrash style={{ marginRight: '5px' }} />Supprimer
-          </button>
+    return (
+        <div>
+            <h2>Changer la Photo de Profil</h2>
+            <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+            />
+            <br /><br />
+            <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setFile(e.target.files[0])}
+            />
+            <br /><br />
+            <button onClick={handlePhotoChange}>Modifier la Photo</button>
         </div>
-      ))}
-    </div>
-  );
+    );
 }
-
-const buttonStyle = {
-  padding: '8px 16px',
-  backgroundColor: '#e50914',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
-  display: 'inline-flex',
-  alignItems: 'center',
-};
-
-export default Update;

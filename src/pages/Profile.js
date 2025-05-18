@@ -1,45 +1,59 @@
-import React from 'react';
-import Auth from './profile/Auth';
+import React, { useState, useEffect } from 'react';
+import { GoogleLogin, googleLogout } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
+import '../profile/profile.css';
+import AuthComponent from './profile/AuthComponent';
 import Liste from './profile/Liste';
 import Upload from './profile/Upload';
-import Update from './profile/Update';
 import Parametres from './profile/Parametres';
+import Update from './profile/Update';
+import Navigation from './profile/Navigation';
 
-function Profile() {
-  return (
-    <div style={{ padding: '20px', backgroundColor: '#141414', color: '#fff', minHeight: '100vh', fontFamily: 'Arial, sans-serif' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: '40px' }}>Mon Profil</h1>
+export default function Profile() {
+    const [user, setUser] = useState(null);
 
-      <Auth />
+    useEffect(() => {
+        const savedUser = localStorage.getItem('user');
+        if (savedUser) setUser(JSON.parse(savedUser));
+    }, []);
 
-      <section style={sectionStyle}>
-        <h2>Uploader du Contenu</h2>
-        <Upload />
-      </section>
+    const handleLoginSuccess = (credentialResponse) => {
+        const decoded = jwtDecode(credentialResponse.credential);
+        const userData = {
+            name: decoded.name,
+            email: decoded.email,
+            picture: decoded.picture,
+            google_uid: decoded.sub
+        };
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
 
-      <section style={sectionStyle}>
-        <h2>Liste des Utilisateurs</h2>
-        <Liste />
-      </section>
+        axios.post('http://localhost:3000/api/auth/google-auth', userData)
+            .catch(err => console.error(err));
+    };
 
-      <section style={sectionStyle}>
-        <h2>Modifier les Informations</h2>
-        <Update />
-      </section>
+    const handleLogout = () => {
+        googleLogout();
+        localStorage.removeItem('user');
+        setUser(null);
+    };
 
-      <section style={sectionStyle}>
-        <h2>Paramètres du Compte</h2>
-        <Parametres />
-      </section>
-    </div>
-  );
+    return (
+        <div className="profile-container">
+            {!user ? (
+                <GoogleLogin
+                    onSuccess={handleLoginSuccess}
+                    onError={() => alert('Erreur de connexion Google.')}
+                />
+            ) : (
+                <>
+                    <h2>Bienvenue, {user.name}</h2>
+                    <img src={user.picture} alt="Profile" className="profile-picture" />
+                    <button className="logout-btn" onClick={handleLogout}>Déconnexion</button>
+                    <Navigation />
+                </>
+            )}
+        </div>
+    );
 }
-
-const sectionStyle = {
-  marginBottom: '40px',
-  padding: '20px',
-  backgroundColor: '#1f1f1f',
-  borderRadius: '8px',
-};
-
-export default Profile;
